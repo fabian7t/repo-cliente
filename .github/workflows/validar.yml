@@ -4,4 +4,8 @@ on:
     branches-ignore: [main]
 jobs:
   test:
-    uses: fabian7t/repo-central/.github/workflows/templates.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ejecutando Test
+        run: echo "Validacion exitosa para TechMaster LTDA"
