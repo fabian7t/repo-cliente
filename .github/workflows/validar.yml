@@ -1,0 +1,7 @@
+name: Pipeline de Validacion
+on:
+  push:
+    branches-ignore: [main]
+jobs:
+  test:
+    uses: fabian7t/repo-central/.github/workflows/templates.yml@main

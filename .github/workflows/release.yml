@@ -1,0 +1,10 @@
+name: Pipeline de Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  release:
+    uses: fabian7t/repo-central/.github/workflows/templates.yml@main
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
