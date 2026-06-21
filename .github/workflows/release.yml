@@ -33,7 +33,7 @@ jobs:
 
       - name: Kubeconfig
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name tu-cluster-eks || echo "Using local K3s context"
+          aws eks update-kubeconfig --region us-east-1 --name proyecto-eks
 
       - name: Deploy and Validate
         run: |
