@@ -34,10 +34,9 @@ jobs:
           echo "${{ secrets.KUBECONFIG_DATA }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Deploy to k3s
+      - - name: Deploy to k3s
         id: deploy
         run: |
           kubectl apply -f client.yaml
           kubectl rollout status deployment/api-cliente --timeout=120s
-          # Verificar que los pods esten realmente corriendo
-          kubectl wait --for=condition=ready pod -l app=api-cliente --timeout=120s
+          exit 1
