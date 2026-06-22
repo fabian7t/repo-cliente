@@ -38,10 +38,6 @@ jobs:
         id: deploy
         run: |
           kubectl apply -f client.yaml
-          kubectl rollout status deployment/api-cliente --timeout=60s
-
-      - name: Rollback automatico
-        if: failure()
-        run: |
-          kubectl rollout undo deployment/api-cliente
-          kubectl rollout status deployment/api-cliente --timeout=60s
+          kubectl rollout status deployment/api-cliente --timeout=120s
+          # Verificar que los pods esten realmente corriendo
+          kubectl wait --for=condition=ready pod -l app=api-cliente --timeout=120s
