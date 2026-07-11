@@ -1,0 +1,42 @@
+name: Plantilla Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+      docker_username:
+        required: true
+        type: string
+    secrets:
+      KUBECONFIG_DATA:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy to k3s
+        id: deploy
+        run: |
+          kubectl apply -f k8s/${{ inputs.environment }}-deployment.yaml
+          kubectl rollout status deployment/api-cliente-${{ inputs.environment }} --timeout=60s
+
+      - name: Rollback automatico
+        if: failure()
+        run: |
+          kubectl rollout undo deployment/api-cliente-${{ inputs.environment }}
+          kubectl rollout status deployment/api-cliente-${{ inputs.environment }} --timeout=60s
