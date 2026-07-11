@@ -1,41 +1,47 @@
-name: Pipeline de Release
+name: Pipeline de Release - Blue/Green
 
 on:
   push:
     tags: ['v*']
 
 jobs:
-  release:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      image_tag: ${{ github.ref_name }}
+      docker_username: fabian777omg
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  deploy-blue:
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: blue
+      image_tag: ${{ github.ref_name }}
+      docker_username: fabian777omg
+    secrets:
+      KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+
+  switch-traffic:
+    needs: deploy-blue
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run Tests
-        run: |
-          echo "Ejecutando tests de la aplicación..."
-          exit 0
-
-      - name: Login Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: fabian777omg/proyecto-final:latest
-
       - name: Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_DATA }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Deploy to k3s
-        id: deploy
+      - name: Validacion de salud Blue
         run: |
-          kubectl apply -f client.yaml
-          kubectl rollout status deployment/api-cliente --timeout=60s
+          kubectl wait --for=condition=ready pod \
+            -l app=api-cliente,version=blue \
+            --timeout=60s
+
+      - name: Switch trafico a Blue
+        run: |
+          kubectl patch service api-cliente-service \
+            -p '{"spec":{"selector":{"app":"api-cliente","version":"blue"}}}'
+          echo "Trafico apuntando a Blue"
+          kubectl get service api-cliente-service
