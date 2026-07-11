@@ -9,6 +9,10 @@ on:
       docker_username:
         required: true
         type: string
+      version:
+        required: true
+        type: string
+
     secrets:
       DOCKER_PASSWORD:
         required: true
@@ -20,6 +24,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Preparar HTML segun version
+        run: |
+          if [ "${{ inputs.version }}" = "green" ]; then
+            cp index-green.html index.html
+          fi
+
       - name: Login Docker Hub
         uses: docker/login-action@v3
         with:
@@ -30,4 +40,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ inputs.docker_username }}/proyecto-final:${{ inputs.image_tag }},${{ inputs.docker_username }}/proyecto-final:latest
+          tags: ${{ inputs.docker_username }}/proyecto-final:${{ inputs.version }}-${{ inputs.image_tag }},${{ inputs.docker_username }}/proyecto-final:${{ inputs.version }}

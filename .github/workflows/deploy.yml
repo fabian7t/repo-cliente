@@ -29,6 +29,10 @@ jobs:
           echo "${{ secrets.KUBECONFIG_DATA }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
+      - name: Actualizar imagen en deployment
+        run: |
+          sed -i "s|image: ${{ inputs.docker_username }}/proyecto-final:latest|image: ${{ inputs.docker_username }}/proyecto-final:${{ inputs.environment }}-${{ inputs.image_tag }}|g" k8s/${{ inputs.environment }}-deployment.yaml
+
       - name: Deploy to k3s
         id: deploy
         run: |

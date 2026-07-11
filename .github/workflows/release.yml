@@ -5,16 +5,26 @@ on:
     tags: ['v*']
 
 jobs:
-  build:
+  build-blue:
     uses: ./.github/workflows/build.yml
     with:
       image_tag: ${{ github.ref_name }}
       docker_username: fabian777omg
+      version: blue
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  build-green:
+    uses: ./.github/workflows/build.yml
+    with:
+      image_tag: ${{ github.ref_name }}
+      docker_username: fabian777omg
+      version: green
     secrets:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   deploy-blue:
-    needs: build
+    needs: build-blue
     uses: ./.github/workflows/deploy.yml
     with:
       environment: blue
@@ -23,8 +33,18 @@ jobs:
     secrets:
       KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
 
+  deploy-green:
+    needs: [build-green, deploy-blue]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: green
+      image_tag: ${{ github.ref_name }}
+      docker_username: fabian777omg
+    secrets:
+      KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+
   switch-traffic:
-    needs: deploy-blue
+    needs: deploy-green
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,15 +60,20 @@ jobs:
         run: |
           kubectl apply -f k8s/service.yaml
 
-      - name: Validacion de salud Blue
+      - name: Validacion de salud Green
         run: |
           kubectl wait --for=condition=ready pod \
-            -l app=api-cliente,version=blue \
+            -l app=api-cliente,version=green \
             --timeout=60s
 
-      - name: Switch trafico a Blue
+      - name: Switch trafico a Green
         run: |
           kubectl patch service api-cliente-service \
-            -p '{"spec":{"selector":{"app":"api-cliente","version":"blue"}}}'
-          echo "Trafico apuntando a Blue"
+            -p '{"spec":{"selector":{"app":"api-cliente","version":"green"}}}'
+          echo "Trafico apuntando a GREEN"
           kubectl get service api-cliente-service
+
+      - name: Verificar servicio
+        run: |
+          sleep 5
+          curl http://54.163.58.119:30080
