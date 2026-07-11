@@ -156,3 +156,11 @@ El servicio Orders es crítico — maneja transacciones de pago. Cualquier error
 
 - **Repo cliente:** https://github.com/fabian7t/repo-cliente
 - **Docker Hub:** https://hub.docker.com/r/fabian777omg/proyecto-final
+---
+
+## Declaración de uso de IA
+
+Se utilizó inteligencia artificial (Claude - Anthropic) como apoyo en la implementación y documentación de este proyecto, específicamente en la estructuración de workflows de GitHub Actions y manifiestos de Kubernetes.
+
+**Cita APA:**
+Anthropic. (2026). *Claude* (versión Sonnet 4.6) [Modelo de lenguaje de gran escala]. https://claude.ai
