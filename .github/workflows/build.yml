@@ -1,0 +1,33 @@
+name: Plantilla Build
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+      docker_username:
+        required: true
+        type: string
+    secrets:
+      DOCKER_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ inputs.docker_username }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ inputs.docker_username }}/proyecto-final:${{ inputs.image_tag }},${{ inputs.docker_username }}/proyecto-final:latest
