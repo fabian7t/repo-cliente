@@ -27,11 +27,18 @@ jobs:
     needs: deploy-blue
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_DATA }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
+
+      - name: Aplicar Service
+        run: |
+          kubectl apply -f k8s/service.yaml
 
       - name: Validacion de salud Blue
         run: |
